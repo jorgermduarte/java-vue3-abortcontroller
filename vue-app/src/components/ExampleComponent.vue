@@ -19,12 +19,12 @@
     },
     methods: {
       async fetchRestData() {
-        try {
-          const response = await ApiService.getRestData();
-          this.restData = response.data;
-        } catch (error) {
-          console.error('Failed to fetch REST data:', error);
-        }
+          this.restData = ''; // Limpa o estado local
+          ApiService.getRestData( response => {
+
+            this.restData = response;
+
+          });
       },
       async fetchStreamData() {
         this.streamData = ''; // Limpa o estado local

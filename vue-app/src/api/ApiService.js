@@ -1,13 +1,39 @@
-import axios from './axiosConfig';
-
 let currentController = null;
+let currentRestController = null;
 let BASE_URL = 'http://localhost:8080';
 
 export default {
-    
-    getRestData() {
-        console.log("doing a rest request");
-        return axios.get(`${BASE_URL}/api/data`);
+     getRestData(callback) {
+
+        // Aborta a requisição anterior se ainda estiver em andamento
+        if(currentRestController){
+            currentRestController.abort();
+            console.log("Previous fetch aborted");
+        }
+
+        // Inicializa um novo controller para a nova requisição
+        currentRestController = new AbortController();
+        const signal = currentRestController.signal;
+
+        // Faz a requisição GET para a URL /api/data
+        fetch(`${BASE_URL}/api/data`, { signal })
+        .then(async response => {
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`);
+            }
+
+            const textResponse = await response.text();
+            console.log('Response:', textResponse);
+            callback(textResponse);
+        })
+        .catch(err => {
+            if (err.name === 'AbortError') {
+                console.log('Fetch was aborted');
+            } else {
+                console.error('Error fetching data:', err);
+            }
+            callback(null);
+        });
     },
     getStreamData(callback) {
         // Aborta a requisição anterior se ainda estiver em andamento
